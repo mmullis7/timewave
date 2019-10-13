@@ -69,6 +69,8 @@ class PowerUp:
             self.version = 'heart'
         elif version == 'coin':
             self.version = coin
+        elif version == 'bullet':
+            self.version= 'bullet'
         else:
             self.version = 'hourglass'
 
@@ -93,6 +95,7 @@ def redraw(heart, shots):
     Description: this function redraws the input to the screen for everything
     """
     screen.fill((80, 80, 80))
+
     # heart containers
     for i in range(heart):
         screen.blit(heart16, (i*25+15, 15))
@@ -129,11 +132,12 @@ if __name__ == "__main__":
     coin = pygame.image.load('C:/Users/18504/PycharmProjects/HelloWorld/coin.png')
     background = pygame.image.load('C:/Users/18504/PycharmProjects/HelloWorld/back.png')
     beam = pygame.image.load('C:/Users/18504/PycharmProjects/HelloWorld/beam.png')
+    bullet_power = pygame.image.load('C:/Users/18504/PycharmProjects/HelloWorld/bullet_power.png')
     run = True  # state of game
 
     # create ship and power ups
     ship = Ship(300, 275)
-    powerUps = [PowerUp(700, 400, 'heart', heart32, True), PowerUp(800, 100, 'hourglass', hourglass, False),
+    powerUps = [PowerUp(700, 400, 'bullet', bullet_power, True), PowerUp(800, 100, 'hourglass', hourglass, False),
                 PowerUp(900, 10, 'hourglass', hourglass, True), PowerUp(1500, 250, 'heart', heart32, False),
                 PowerUp(1100, 300, 'coin', coin, True)]
 
@@ -145,6 +149,8 @@ if __name__ == "__main__":
 
     k = 0  # k is used to add small delay to updating the movement of the ship and power ups
     start = 0
+    bullet_start = 0
+    fast_bullets = 1
     while run:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:  # If they click the Close button on the display
@@ -158,8 +164,12 @@ if __name__ == "__main__":
         if keys[pygame.K_s] and ship.y < screenHeight - 69:  # key: s    :   Move ship down
             ship.y += 1
             ship.hitbox = (ship.x, ship.y, 95, 65)
-        if keys[pygame.K_SPACE] and time.time() - start > 0.5:
+        if keys[pygame.K_SPACE] and time.time() - start > 0.35 / fast_bullets:
             start = time.time()
+            if len(beams) > 100:
+                temp = beams[89:]
+                beams.clear()
+                beams = temp
             beams.append([ship.x + 25, ship.y + 16])
 
         if keys[pygame.K_a]:  # key: a    :   Slow down
@@ -205,7 +215,13 @@ if __name__ == "__main__":
                         else:
                             pass
                             # add points
+                    elif power.version == 'bullet':
+                        fast_bullets = 2
+                        bullet_start = time.time()
                     power.kill()
+
+        if start != 0 and time.time() - bullet_start > 10:
+            fast_bullets = 1
 
         k += 1
         redraw(numHearts, beams)  # redraw the screen
